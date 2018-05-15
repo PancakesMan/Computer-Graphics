@@ -123,11 +123,12 @@ void Application3D::draw() {
 	m_shader.bindUniform("ProjectionViewModel", pvm);
 
 	// draw quad
-	m_quadMesh.draw();
 
 	// draw 3D gizmos
 	Gizmos::draw(m_projectionMatrix * m_viewMatrix);
 
 	// draw 2D gizmos using an orthogonal projection matrix (or screen dimensions)
 	Gizmos::draw2D((float)getWindowWidth(), (float)getWindowHeight());
+
+	m_quadMesh.draw();
 }
