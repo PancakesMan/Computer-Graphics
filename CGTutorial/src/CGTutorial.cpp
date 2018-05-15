@@ -109,6 +109,7 @@ public:
 
 	void Update(float deltaTime)
 	{
+		// Timer
 		m_timer += deltaTime;
 
 		mat4* def = new mat4(1);
