@@ -30,6 +30,24 @@ bool Application3D::startup() {
 										  getWindowWidth() / (float)getWindowHeight(),
 										  0.1f, 1000.f);
 
+	m_shader.loadShader(aie::eShaderStage::VERTEX, "./shaders/simple.vert");
+	m_shader.loadShader(aie::eShaderStage::FRAGMENT, "./shaders/simple.frag");
+	if (m_shader.link() == false)
+	{
+		printf("Sahder error: %s\n", m_shader.getLastError());
+		return false;
+	}
+
+	m_quadMesh.initialiseQuad();
+
+	// Make the quad 10 units wide
+	m_quadTransform = {
+		10,0,0,0,
+		0,10,0,0,
+		0,0,10,0,
+		0,0.01f,0,1
+	};
+
 	return true;
 }
 
@@ -97,6 +115,15 @@ void Application3D::draw() {
 	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f,
 										  getWindowWidth() / (float)getWindowHeight(),
 										  0.1f, 1000.f);
+	// bind shader
+	m_shader.bind();
+
+	// bind transform
+	auto pvm = m_projectionMatrix * m_viewMatrix * m_quadTransform;
+	m_shader.bindUniform("ProjectionViewModel", pvm);
+
+	// draw quad
+	m_quadMesh.draw();
 
 	// draw 3D gizmos
 	Gizmos::draw(m_projectionMatrix * m_viewMatrix);
