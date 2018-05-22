@@ -21,6 +21,11 @@ bool Application3D::startup() {
 	
 	setBackgroundColour(0.25f, 0.25f, 0.25f);
 
+	// Initialise Lighting
+	m_light.diffuse = { 1, 1, 0 };
+	m_light.specular = { 1, 1, 0 };
+	m_ambientLight = { 0.25f, 0.25f, 0.25f };
+
 	// initialise gizmo primitive counts
 	Gizmos::create(10000, 10000, 10000, 10000);
 
@@ -30,11 +35,30 @@ bool Application3D::startup() {
 										  getWindowWidth() / (float)getWindowHeight(),
 										  0.1f, 1000.f);
 
-	m_shader.loadShader(aie::eShaderStage::VERTEX, "./shaders/simple.vert");
-	m_shader.loadShader(aie::eShaderStage::FRAGMENT, "./shaders/simple.frag");
+	m_shader.loadShader(aie::eShaderStage::VERTEX, "./shaders/phong.vert");
+	m_shader.loadShader(aie::eShaderStage::FRAGMENT, "./shaders/phong.frag");
 	if (m_shader.link() == false)
 	{
-		printf("Sahder error: %s\n", m_shader.getLastError());
+		printf("Shader error: %s\n", m_shader.getLastError());
+		return false;
+	}
+
+	m_planeShader.loadShader(aie::eShaderStage::VERTEX, "./shaders/textured.vert");
+	m_planeShader.loadShader(aie::eShaderStage::FRAGMENT, "./shaders/textured.frag");
+	if (m_planeShader.link() == false)
+	{
+		printf("Shader error: %s\n", m_shader.getLastError());
+		return false;
+	}
+
+	if (m_gridTexture.load("./textures/numbered_grid.tga") == false) {
+		printf("Failed to load texture!\n");
+		return false;
+	}
+
+	if (m_bunny.load("./models/soulspear/soulspear.obj", true, true) == false)
+	{
+		printf("Soulspear Mesh Error!\n");
 		return false;
 	}
 
@@ -46,6 +70,13 @@ bool Application3D::startup() {
 		0,10,0,0,
 		0,0,10,0,
 		0,0.01f,0,1
+	};
+
+	m_bunnyTransform = {
+		0.5f, 0, 0, 0,
+		0, 0.5f, 0, 0,
+		0, 0, 0.5f, 0,
+		0, 0, 0, 1
 	};
 
 	return true;
@@ -84,15 +115,15 @@ void Application3D::update(float deltaTime) {
 	Gizmos::addTransform(mat4(1));
 
 	// demonstrate a few shapes
-	Gizmos::addAABBFilled(vec3(0), vec3(1), vec4(0, 0.5f, 1, 0.25f));
+	/*Gizmos::addAABBFilled(vec3(0), vec3(1), vec4(0, 0.5f, 1, 0.25f));
 	Gizmos::addSphere(vec3(5, 0, 5), 1, 8, 8, vec4(1, 0, 0, 0.5f));
 	Gizmos::addRing(vec3(5, 0, -5), 1, 1.5f, 8, vec4(0, 1, 0, 1));
 	Gizmos::addDisk(vec3(-5, 0, 5), 1, 16, vec4(1, 1, 0, 1));
-	Gizmos::addArc(vec3(-5, 0, -5), 0, 2, 1, 8, vec4(1, 0, 1, 1));
+	Gizmos::addArc(vec3(-5, 0, -5), 0, 2, 1, 8, vec4(1, 0, 1, 1));*/
 
-	mat4 t = glm::rotate(mat4(1), time, glm::normalize(vec3(1, 1, 1)));
+	/*mat4 t = glm::rotate(mat4(1), time, glm::normalize(vec3(1, 1, 1)));
 	t[3] = vec4(-2, 0, 0, 1);
-	Gizmos::addCylinderFilled(vec3(0), 0.5f, 1, 5, vec4(0, 1, 1, 1), &t);
+	Gizmos::addCylinderFilled(vec3(0), 0.5f, 1, 5, vec4(0, 1, 1, 1), &t);*/
 
 	// demonstrate 2D gizmos
 	Gizmos::add2DAABB(glm::vec2(getWindowWidth() / 2, 100),
@@ -104,6 +135,10 @@ void Application3D::update(float deltaTime) {
 
 	if (input->isKeyDown(aie::INPUT_KEY_ESCAPE))
 		quit();
+
+	m_light.direction = glm::normalize(vec3(glm::cos(getTime() * 2), glm::sin(getTime() * 2), 0));
+
+	m_flyCamera.Update();
 }
 
 void Application3D::draw() {
@@ -112,17 +147,32 @@ void Application3D::draw() {
 	clearScreen();
 
 	// update perspective in case window resized
-	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f,
+	/*m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f,
 										  getWindowWidth() / (float)getWindowHeight(),
-										  0.1f, 1000.f);
+										  0.1f, 1000.f);*/
+	m_projectionMatrix = m_flyCamera.GetProjectionMatrix(getWindowWidth(), getWindowHeight());
+	m_viewMatrix = m_flyCamera.GetViewMatrix();
+	
 	// bind shader
 	m_shader.bind();
-
-	// bind transform
-	auto pvm = m_projectionMatrix * m_viewMatrix * m_quadTransform;
-	m_shader.bindUniform("ProjectionViewModel", pvm);
+	auto pvmBunny = m_projectionMatrix * m_viewMatrix * m_bunnyTransform;	
+	m_shader.bindUniform("Ia", m_ambientLight);
+	m_shader.bindUniform("Id", m_light.diffuse);
+	m_shader.bindUniform("Is", m_light.specular);
+	m_shader.bindUniform("LightDirection", m_light.direction);
+	m_shader.bindUniform("ProjectionViewModel", pvmBunny);
+	m_shader.bindUniform("ModelMatrix", m_bunnyTransform);
+	m_shader.bindUniform("cameraPosition", vec3(glm::inverse(m_viewMatrix)[3]));
+	m_bunny.draw();
 
 	// draw quad
+	m_planeShader.bind();
+	auto pvm = m_projectionMatrix * m_viewMatrix * m_quadTransform;
+	m_planeShader.bindUniform("ProjectionViewModel", pvm);
+	m_planeShader.bindUniform("diffuseTexture", 0);
+	m_gridTexture.bind(0);
+	m_quadMesh.draw();
+	
 
 	// draw 3D gizmos
 	Gizmos::draw(m_projectionMatrix * m_viewMatrix);
@@ -130,5 +180,4 @@ void Application3D::draw() {
 	// draw 2D gizmos using an orthogonal projection matrix (or screen dimensions)
 	Gizmos::draw2D((float)getWindowWidth(), (float)getWindowHeight());
 
-	m_quadMesh.draw();
 }
