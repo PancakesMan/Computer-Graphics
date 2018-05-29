@@ -6,6 +6,7 @@
 #include "Mesh.h"
 #include "OBJMesh.h"
 #include "FlyCamera.h"
+#include "RenderTarget.h"
 
 class Application3D : public aie::Application {
 public:
@@ -37,5 +38,14 @@ protected:
 	} m_light;
 	glm::vec3 m_ambientLight;
 
+	struct TestLight {
+		union {
+			glm::mat3 light;
+			glm::vec3 dds[3];
+		};
+	} m_testLight;
+
 	FlyCamera m_flyCamera;
+
+	aie::RenderTarget m_renderTarget;
 };

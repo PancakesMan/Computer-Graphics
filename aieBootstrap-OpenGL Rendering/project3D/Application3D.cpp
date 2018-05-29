@@ -21,8 +21,16 @@ bool Application3D::startup() {
 	
 	setBackgroundColour(0.25f, 0.25f, 0.25f);
 
+	if (m_renderTarget.initialise(1, getWindowWidth(), getWindowHeight()) == false) {
+		printf("Render target error!\n");
+		return false;
+	}
+
+	m_testLight.dds[1] = { 1, 1, 1 };
+	m_testLight.dds[2] = { 1, 1, 0 };
+
 	// Initialise Lighting
-	m_light.diffuse = { 1, 1, 0 };
+	m_light.diffuse = { 1, 1, 1 };
 	m_light.specular = { 1, 1, 0 };
 	m_ambientLight = { 0.25f, 0.25f, 0.25f };
 
@@ -35,8 +43,8 @@ bool Application3D::startup() {
 										  getWindowWidth() / (float)getWindowHeight(),
 										  0.1f, 1000.f);
 
-	m_shader.loadShader(aie::eShaderStage::VERTEX, "./shaders/phong.vert");
-	m_shader.loadShader(aie::eShaderStage::FRAGMENT, "./shaders/phong.frag");
+	m_shader.loadShader(aie::eShaderStage::VERTEX, "./shaders/normalmap.vert");
+	m_shader.loadShader(aie::eShaderStage::FRAGMENT, "./shaders/normalmap.frag");
 	if (m_shader.link() == false)
 	{
 		printf("Shader error: %s\n", m_shader.getLastError());
@@ -137,11 +145,14 @@ void Application3D::update(float deltaTime) {
 		quit();
 
 	m_light.direction = glm::normalize(vec3(glm::cos(getTime() * 2), glm::sin(getTime() * 2), 0));
+	m_testLight.dds[0] = glm::normalize(vec3(glm::cos(getTime() * 2), glm::sin(getTime() * 2), 0));
 
 	m_flyCamera.Update();
 }
 
 void Application3D::draw() {
+	// bind our render target
+	m_renderTarget.bind();
 
 	// wipe the screen to the background colour
 	clearScreen();
@@ -157,20 +168,26 @@ void Application3D::draw() {
 	m_shader.bind();
 	auto pvmBunny = m_projectionMatrix * m_viewMatrix * m_bunnyTransform;	
 	m_shader.bindUniform("Ia", m_ambientLight);
-	m_shader.bindUniform("Id", m_light.diffuse);
-	m_shader.bindUniform("Is", m_light.specular);
-	m_shader.bindUniform("LightDirection", m_light.direction);
+	//m_shader.bindUniform("Id", m_light.diffuse);
+	//m_shader.bindUniform("Is", m_light.specular);
+	//m_shader.bindUniform("LightDirection", m_light.direction);
+	m_shader.bindUniform("Light", m_testLight.light);
 	m_shader.bindUniform("ProjectionViewModel", pvmBunny);
 	m_shader.bindUniform("ModelMatrix", m_bunnyTransform);
 	m_shader.bindUniform("cameraPosition", vec3(glm::inverse(m_viewMatrix)[3]));
+	m_shader.bindUniform("roughness", 0.0f);
 	m_bunny.draw();
+
+	m_renderTarget.unbind();
+	clearScreen();
 
 	// draw quad
 	m_planeShader.bind();
 	auto pvm = m_projectionMatrix * m_viewMatrix * m_quadTransform;
 	m_planeShader.bindUniform("ProjectionViewModel", pvm);
 	m_planeShader.bindUniform("diffuseTexture", 0);
-	m_gridTexture.bind(0);
+	//m_gridTexture.bind(0);
+	m_renderTarget.getTarget(0).bind(0);
 	m_quadMesh.draw();
 	
 
