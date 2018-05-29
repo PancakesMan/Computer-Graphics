@@ -17,6 +17,7 @@ uniform vec3 Ia; // ambient light colour
 //uniform vec3 Is; // specular light colour
 //uniform vec3 LightDirection;
 uniform mat3 Light;
+uniform mat3 Light2;
 
 uniform vec3 Ka; // ambient material colour
 uniform vec3 Kd; // diffuse material colour

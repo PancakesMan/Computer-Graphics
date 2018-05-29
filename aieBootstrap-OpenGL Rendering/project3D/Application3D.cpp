@@ -3,6 +3,7 @@
 #include "Input.h"
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
+#include <imgui.h>
 
 using glm::vec3;
 using glm::vec4;
@@ -18,18 +19,19 @@ Application3D::~Application3D() {
 }
 
 bool Application3D::startup() {
-	
 	setBackgroundColour(0.25f, 0.25f, 0.25f);
 
-	if (m_renderTarget.initialise(1, getWindowWidth(), getWindowHeight()) == false) {
+	/*if (m_renderTarget.initialise(1, getWindowWidth(), getWindowHeight()) == false) {
 		printf("Render target error!\n");
 		return false;
-	}
+	}*/
 
+	m_testLight.dds[0] = { 1, 1, 1 };
 	m_testLight.dds[1] = { 1, 1, 1 };
 	m_testLight.dds[2] = { 1, 1, 0 };
 
 	// Initialise Lighting
+	m_light.direction = { 1, 1, 1 };
 	m_light.diffuse = { 1, 1, 1 };
 	m_light.specular = { 1, 1, 0 };
 	m_ambientLight = { 0.25f, 0.25f, 0.25f };
@@ -86,6 +88,9 @@ bool Application3D::startup() {
 		0, 0, 0.5f, 0,
 		0, 0, 0, 1
 	};
+
+	// test instancing spear
+	m_spearInstance = new ObjectInstance("Soulspear", &m_bunny, &m_shader);
 
 	return true;
 }
@@ -144,15 +149,24 @@ void Application3D::update(float deltaTime) {
 	if (input->isKeyDown(aie::INPUT_KEY_ESCAPE))
 		quit();
 
-	m_light.direction = glm::normalize(vec3(glm::cos(getTime() * 2), glm::sin(getTime() * 2), 0));
-	m_testLight.dds[0] = glm::normalize(vec3(glm::cos(getTime() * 2), glm::sin(getTime() * 2), 0));
+	//m_light.direction = glm::normalize(vec3(glm::cos(getTime() * 2), glm::sin(getTime() * 2), 0));
+	//m_testLight.dds[0] = glm::normalize(vec3(glm::cos(getTime() * 2), glm::sin(getTime() * 2), 0));
 
 	m_flyCamera.Update();
 }
 
 void Application3D::draw() {
+	// IMGUI
+	ImGui::Begin("Lights");
+	ImGui::SliderFloat3("Ambient Light Colour", &m_ambientLight.x, 0, 1);
+	ImGui::SliderFloat3("Direction Light", &m_testLight.dds[0].x, -20, 20);
+	ImGui::SliderFloat3("Diffusion Light", &m_testLight.dds[1].x, 0, 1);
+	ImGui::SliderFloat3("Specular Light", &m_testLight.dds[2].x, 0, 1);
+	ImGui::End();
+	//
+
 	// bind our render target
-	m_renderTarget.bind();
+	//m_renderTarget.bind();
 
 	// wipe the screen to the background colour
 	clearScreen();
@@ -165,29 +179,30 @@ void Application3D::draw() {
 	m_viewMatrix = m_flyCamera.GetViewMatrix();
 	
 	// bind shader
-	m_shader.bind();
-	auto pvmBunny = m_projectionMatrix * m_viewMatrix * m_bunnyTransform;	
-	m_shader.bindUniform("Ia", m_ambientLight);
-	//m_shader.bindUniform("Id", m_light.diffuse);
-	//m_shader.bindUniform("Is", m_light.specular);
-	//m_shader.bindUniform("LightDirection", m_light.direction);
-	m_shader.bindUniform("Light", m_testLight.light);
-	m_shader.bindUniform("ProjectionViewModel", pvmBunny);
-	m_shader.bindUniform("ModelMatrix", m_bunnyTransform);
-	m_shader.bindUniform("cameraPosition", vec3(glm::inverse(m_viewMatrix)[3]));
-	m_shader.bindUniform("roughness", 0.0f);
-	m_bunny.draw();
+	//m_shader.bind();
+	auto pvmBunny = m_projectionMatrix * m_viewMatrix * m_spearInstance->getTransform();	
+	m_spearInstance->addBinding("Ia", m_ambientLight);
+	////m_shader.bindUniform("Id", m_light.diffuse);
+	////m_shader.bindUniform("Is", m_light.specular);
+	////m_shader.bindUniform("LightDirection", m_light.direction);
+	m_spearInstance->addBinding("Light", m_testLight.light);
+	m_spearInstance->addBinding("ProjectionViewModel", pvmBunny);
+	m_spearInstance->addBinding("ModelMatrix", m_bunnyTransform);
+	m_spearInstance->addBinding("cameraPosition", vec3(glm::inverse(m_viewMatrix)[3]));
+	m_spearInstance->addBinding("roughness", 1.0f);
+	m_spearInstance->addBinding("reflectionCoefficient", 1.0f);
+	m_spearInstance->draw();
 
-	m_renderTarget.unbind();
-	clearScreen();
+	//m_renderTarget.unbind();
+	//clearScreen();
 
 	// draw quad
 	m_planeShader.bind();
 	auto pvm = m_projectionMatrix * m_viewMatrix * m_quadTransform;
 	m_planeShader.bindUniform("ProjectionViewModel", pvm);
 	m_planeShader.bindUniform("diffuseTexture", 0);
-	//m_gridTexture.bind(0);
-	m_renderTarget.getTarget(0).bind(0);
+	m_gridTexture.bind(0);
+	//m_renderTarget.getTarget(0).bind(0);
 	m_quadMesh.draw();
 	
 

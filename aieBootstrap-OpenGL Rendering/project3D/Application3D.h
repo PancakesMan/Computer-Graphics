@@ -7,6 +7,7 @@
 #include "OBJMesh.h"
 #include "FlyCamera.h"
 #include "RenderTarget.h"
+#include "ObjectInstance.h"
 
 class Application3D : public aie::Application {
 public:
@@ -21,6 +22,8 @@ public:
 	virtual void draw();
 
 protected:
+
+	ObjectInstance* m_spearInstance;
 
 	glm::mat4	m_viewMatrix;
 	glm::mat4	m_projectionMatrix;
