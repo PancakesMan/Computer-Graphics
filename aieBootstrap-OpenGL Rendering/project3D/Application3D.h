@@ -23,7 +23,7 @@ public:
 
 protected:
 
-	ObjectInstance* m_spearInstance;
+	ObjectInstance * m_spearInstance, * m_spearInstance2;
 
 	glm::mat4	m_viewMatrix;
 	glm::mat4	m_projectionMatrix;

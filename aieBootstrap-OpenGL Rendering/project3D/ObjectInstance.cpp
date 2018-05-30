@@ -31,7 +31,7 @@ ObjectInstance::~ObjectInstance()
 
 void ObjectInstance::draw()
 {
-	ImGui::Begin(m_name);
+	ImGui::Begin((std::string(m_name) + std::to_string((int)&m_name)).c_str());
 	ImGui::SliderFloat3("Position", &m_pos.x, -20, 20);
 	ImGui::SliderFloat3("Rotation", &m_euler.x, 0, 360);
 	ImGui::SliderFloat3("Scale", &m_scale.x, 0, 10);

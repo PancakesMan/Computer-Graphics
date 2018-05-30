@@ -91,6 +91,7 @@ bool Application3D::startup() {
 
 	// test instancing spear
 	m_spearInstance = new ObjectInstance("Soulspear", &m_bunny, &m_shader);
+	m_spearInstance2 = new ObjectInstance("Soulspear", &m_bunny, &m_shader);
 
 	return true;
 }
@@ -159,9 +160,11 @@ void Application3D::draw() {
 	// IMGUI
 	ImGui::Begin("Lights");
 	ImGui::SliderFloat3("Ambient Light Colour", &m_ambientLight.x, 0, 1);
+	ImGui::BeginChildFrame(ImGuiID("Directional Light"), ImVec2(0, 0));
 	ImGui::SliderFloat3("Direction Light", &m_testLight.dds[0].x, -20, 20);
 	ImGui::SliderFloat3("Diffusion Light", &m_testLight.dds[1].x, 0, 1);
 	ImGui::SliderFloat3("Specular Light", &m_testLight.dds[2].x, 0, 1);
+	ImGui::EndChildFrame();
 	ImGui::End();
 	//
 
@@ -192,6 +195,19 @@ void Application3D::draw() {
 	m_spearInstance->addBinding("roughness", 1.0f);
 	m_spearInstance->addBinding("reflectionCoefficient", 1.0f);
 	m_spearInstance->draw();
+
+	pvmBunny = m_projectionMatrix * m_viewMatrix * m_spearInstance2->getTransform();
+	m_spearInstance2->addBinding("Ia", m_ambientLight);
+	////m_shader.bindUniform("Id", m_light.diffuse);
+	////m_shader.bindUniform("Is", m_light.specular);
+	////m_shader.bindUniform("LightDirection", m_light.direction);
+	m_spearInstance2->addBinding("Light", m_testLight.light);
+	m_spearInstance2->addBinding("ProjectionViewModel", pvmBunny);
+	m_spearInstance2->addBinding("ModelMatrix", m_bunnyTransform);
+	m_spearInstance2->addBinding("cameraPosition", vec3(glm::inverse(m_viewMatrix)[3]));
+	m_spearInstance2->addBinding("roughness", 1.0f);
+	m_spearInstance2->addBinding("reflectionCoefficient", 1.0f);
+	m_spearInstance2->draw();
 
 	//m_renderTarget.unbind();
 	//clearScreen();
