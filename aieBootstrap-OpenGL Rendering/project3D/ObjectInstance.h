@@ -20,6 +20,7 @@ public:
 	void addBinding(char* name, glm::mat2 value);
 	void addBinding(char* name, glm::mat3 value);
 	void addBinding(char* name, glm::mat4 value);
+	void addBinding(char* name, int count, glm::mat3* value);
 	void addBinding(char* name, float value);
 	void addBinding(char* name, int value);
 
@@ -29,19 +30,27 @@ public:
 
 	glm::mat4 getTransform();
 
+protected:
+	struct Mat3Arr {
+		glm::mat3* arr;
+		int size;
+	};
+
 private:
 	const char* m_name;
 
-	std::map<char*, glm::vec2> m_vec2Bindings;
-	std::map<char*, glm::vec3> m_vec3Bindings;
-	std::map<char*, glm::vec4> m_vec4Bindings;
+	std::map<char*, glm::vec2>  m_vec2Bindings;
+	std::map<char*, glm::vec3>  m_vec3Bindings;
+	std::map<char*, glm::vec4>  m_vec4Bindings;
 
-	std::map<char*, glm::mat2> m_mat2Bindings;
-	std::map<char*, glm::mat3> m_mat3Bindings;
-	std::map<char*, glm::mat4> m_mat4Bindings;
+	std::map<char*, glm::mat2>  m_mat2Bindings;
+	std::map<char*, glm::mat3>  m_mat3Bindings;
+	std::map<char*, glm::mat4>  m_mat4Bindings;
 
-	std::map<char*, float>     m_floatBindings;
-	std::map<char*, int>       m_intBindings;
+	std::map<char*, Mat3Arr> m_mat3arrBindings;
+
+	std::map<char*, float>      m_floatBindings;
+	std::map<char*, int>        m_intBindings;
 
 	aie::ShaderProgram*   m_shader;
 	aie::OBJMesh*         m_mesh;

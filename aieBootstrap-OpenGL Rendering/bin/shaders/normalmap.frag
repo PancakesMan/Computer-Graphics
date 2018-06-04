@@ -1,5 +1,9 @@
 #version 410
 
+#define DIRECTION 0
+#define DIFFUSE 1
+#define SPECULAR 2
+
 in vec4 vPosition;
 in vec3 vNormal;
 in vec3 vTangent;
@@ -16,6 +20,7 @@ uniform vec3 Ia; // ambient light colour
 //uniform vec3 Id; // diffuse light colour
 //uniform vec3 Is; // specular light colour
 //uniform vec3 LightDirection;
+uniform mat3 Lights[2];
 uniform mat3 Light;
 uniform mat3 Light2;
 
@@ -43,6 +48,7 @@ void main() {
 	vec3 texNormal = texture(normalTexture, vTexCoord).rgb;
 	
 	N = TBN * (texNormal * 2 - 1);
+	
 	float lambertTerm = max(0, min(1, dot(N, -L)));
 	
 	// calculate view vector and reflection vector

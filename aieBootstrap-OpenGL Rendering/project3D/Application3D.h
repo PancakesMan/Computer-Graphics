@@ -36,6 +36,8 @@ protected:
 	glm::mat4           m_bunnyTransform;
 	aie::Texture        m_gridTexture;
 
+	glm::mat3*          m_Lights;
+
 	struct Light {
 		glm::vec3 direction, diffuse, specular;
 	} m_light;
@@ -46,7 +48,7 @@ protected:
 			glm::mat3 light;
 			glm::vec3 dds[3];
 		};
-	} m_testLight;
+	} m_Light, m_Light2, m_Light3;
 
 	FlyCamera m_flyCamera;
 

@@ -45,6 +45,7 @@ void ObjectInstance::draw()
 	for (auto const& value : m_mat2Bindings)  m_shader->bindUniform(value.first, value.second);
 	for (auto const& value : m_mat3Bindings)  m_shader->bindUniform(value.first, value.second);
 	for (auto const& value : m_mat4Bindings)  m_shader->bindUniform(value.first, value.second);
+	for (auto const& value : m_mat3arrBindings) m_shader->bindUniform(value.first, value.second.size, value.second.arr);
 	for (auto const& value : m_floatBindings) m_shader->bindUniform(value.first, value.second);
 	for (auto const& value : m_intBindings)   m_shader->bindUniform(value.first, value.second);
 
@@ -79,6 +80,11 @@ void ObjectInstance::addBinding(char* name, glm::mat3 value)
 void ObjectInstance::addBinding(char* name, glm::mat4 value)
 {
 	m_mat4Bindings[name] = value;
+}
+
+void ObjectInstance::addBinding(char* name, int count, glm::mat3* value)
+{
+	m_mat3arrBindings[name] = { value, count };
 }
 
 void ObjectInstance::addBinding(char* name, float value)
