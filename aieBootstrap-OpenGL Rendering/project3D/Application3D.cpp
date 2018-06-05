@@ -26,23 +26,26 @@ bool Application3D::startup() {
 		return false;
 	}*/
 
-	m_Light.dds[0] = { 1, 1, 1 };
-	m_Light.dds[1] = { 1, 1, 1 };
-	m_Light.dds[2] = { 1, 1, 0 };
+	// Initialise Lighting
+	m_ambientLight = { 0.05f, 0.05f, 0.05f };
 
-	m_Light2.dds[0] = { 0, 0, 0 };
-	m_Light2.dds[1] = { 0, 0, 0 };
-	m_Light2.dds[2] = { 0, 0, 0 };
+	m_Light.dds[0] = { -10, 1, 1 };
+	m_Light.dds[1] = { 1, 1, 1 };
+	m_Light.dds[2] = { 1, 1, 1 };
+
+	m_Light2.dds[0] = { 10, 1, 1 };
+	m_Light2.dds[1] = { 1, 1, 1 };
+	m_Light2.dds[2] = { 1, 1, 1 };
 
 	m_Lights = new glm::mat3[2];
 	m_Lights[0] = m_Light.light;
 	m_Lights[1] = m_Light2.light;
 
 	// Initialise Lighting
-	m_light.direction = { 1, 1, 1 };
+	/*m_light.direction = { 1, 1, 1 };
 	m_light.diffuse = { 1, 1, 1 };
-	m_light.specular = { 1, 1, 0 };
-	m_ambientLight = { 0.05f, 0.05f, 0.05f };
+	m_light.specular = { 1, 1, 0 };*/
+	
 
 	// initialise gizmo primitive counts
 	Gizmos::create(10000, 10000, 10000, 10000);
@@ -74,7 +77,31 @@ bool Application3D::startup() {
 		return false;
 	}
 
-	if (m_bunny.load("./models/soulspear/soulspear.obj", true, true) == false)
+	if (m_spear.load("./models/soulspear/soulspear.obj", true, true) == false)
+	{
+		printf("Soulspear Mesh Error!\n");
+		return false;
+	}
+
+	if (m_chest.load("./models/chest/Chest.obj", true, true) == false)
+	{
+		printf("Soulspear Mesh Error!\n");
+		return false;
+	}
+
+	if (m_barrel.load("./models/barrel/big_wood_barrel.obj", true, true) == false)
+	{
+		printf("Soulspear Mesh Error!\n");
+		return false;
+	}
+
+	if (m_horn.load("./models/horn/horn.obj", true, true) == false)
+	{
+		printf("Soulspear Mesh Error!\n");
+		return false;
+	}
+
+	if (m_skull.load("./models/skull/skull.obj", true, true) == false)
 	{
 		printf("Soulspear Mesh Error!\n");
 		return false;
@@ -97,9 +124,25 @@ bool Application3D::startup() {
 		0, 0, 0, 1
 	};
 
-	// test instancing spear
-	m_spearInstance = new ObjectInstance("Soulspear", &m_bunny, &m_shader);
-	m_spearInstance2 = new ObjectInstance("Soulspear", &m_bunny, &m_shader);
+	// Object Instancing
+	m_spearInstance = new ObjectInstance("Soulspear", &m_spear, &m_shader);
+
+	m_chestInstance = new ObjectInstance("Chest", &m_chest, &m_shader);
+	m_chestInstance->setScale({ 0.02, 0.02, 0.02 });
+	m_chestInstance->setPos({ -4.3, 0, 2.7 });
+
+	m_barrelInstance = new ObjectInstance("Barrel", &m_barrel, &m_shader);
+	m_barrelInstance->setScale({ 0.02, 0.02, 0.02 });
+	m_barrelInstance->setPos({ 4.3, 0, 2.7 });
+
+	m_hornInstance = new ObjectInstance("Horn", &m_horn, &m_shader);
+	m_hornInstance->setScale({ 0.02, 0.02, 0.02 });
+	m_hornInstance->setPos({ 4.3, 1.0, -2.7 });
+
+	m_skullInstance = new ObjectInstance("Skull", &m_skull, &m_shader);
+	m_skullInstance->setScale({ 0.216, 0.216, 0.216 });
+	m_skullInstance->setPos({ -4.3, 0.7, -2.7 });
+
 
 	return true;
 }
@@ -169,14 +212,14 @@ void Application3D::draw() {
 	ImGui::Begin("Lights");
 	ImGui::SliderFloat3("Ambient Light Colour", &m_ambientLight.x, 0, 1);
 	if (ImGui::CollapsingHeader((std::string("Directional Light ") + std::to_string((int)&m_Light)).c_str())) {
-		ImGui::SliderFloat3((std::string("Direction ") + std::to_string((int)&m_Light.dds[0])).c_str(), &m_Light.dds[0].x, -20, 20);
-		ImGui::SliderFloat3((std::string("Diffusion ") + std::to_string((int)&m_Light.dds[1])).c_str(), &m_Light.dds[1].x, 0, 1);
-		ImGui::SliderFloat3((std::string("Specular ") + std::to_string((int)&m_Light.dds[2])).c_str(), &m_Light.dds[2].x, 0, 1);
+		ImGui::SliderFloat3((std::string("Direction ") + std::to_string((int)&m_Lights[0][0])).c_str(), &m_Lights[0][0].x, -20, 20);
+		ImGui::SliderFloat3((std::string("Diffusion ") + std::to_string((int)&m_Lights[0][1])).c_str(), &m_Lights[0][1].x, 0, 1);
+		ImGui::SliderFloat3((std::string("Specular ") + std::to_string((int)&m_Lights[0][2])).c_str(), &m_Lights[0][2].x, 0, 1);
 	}
 	if (ImGui::CollapsingHeader((std::string("Directional Light ") + std::to_string((int)&m_Light2)).c_str())) {
-		ImGui::SliderFloat3((std::string("Direction ") + std::to_string((int)&m_Light2.dds[0])).c_str(), &m_Light2.dds[0].x, -20, 20);
-		ImGui::SliderFloat3((std::string("Diffusion ") + std::to_string((int)&m_Light2.dds[1])).c_str(), &m_Light2.dds[1].x, 0, 1);
-		ImGui::SliderFloat3((std::string("Specular ") + std::to_string((int)&m_Light2.dds[2])).c_str(), &m_Light2.dds[2].x, 0, 1);
+		ImGui::SliderFloat3((std::string("Direction ") + std::to_string((int)&m_Lights[1][0])).c_str(), &m_Lights[1][0].x, -20, 20);
+		ImGui::SliderFloat3((std::string("Diffusion ") + std::to_string((int)&m_Lights[1][1])).c_str(), &m_Lights[1][1].x, 0, 1);
+		ImGui::SliderFloat3((std::string("Specular ") + std::to_string((int)&m_Lights[1][2])).c_str(), &m_Lights[1][2].x, 0, 1);
 	}
 	ImGui::End();
 	//
@@ -196,13 +239,11 @@ void Application3D::draw() {
 	
 	// bind shader
 	//m_shader.bind();
+
+	// Spear Instance
 	auto pvmBunny = m_projectionMatrix * m_viewMatrix * m_spearInstance->getTransform();	
 	m_spearInstance->addBinding("Ia", m_ambientLight);
-	////m_shader.bindUniform("Id", m_light.diffuse);
-	////m_shader.bindUniform("Is", m_light.specular);
-	////m_shader.bindUniform("LightDirection", m_light.direction);w
-	m_spearInstance->addBinding("Light", m_Light.light);
-	//m_spearInstance->addBinding("Light2", m_Light2.light);
+	m_spearInstance->addBinding("Lights", 2, m_Lights);
 	m_spearInstance->addBinding("ProjectionViewModel", pvmBunny);
 	m_spearInstance->addBinding("ModelMatrix", m_spearInstance->getTransform());
 	m_spearInstance->addBinding("cameraPosition", vec3(glm::inverse(m_viewMatrix)[3]));
@@ -210,16 +251,49 @@ void Application3D::draw() {
 	m_spearInstance->addBinding("reflectionCoefficient", 1.0f);
 	m_spearInstance->draw();
 
-	pvmBunny = m_projectionMatrix * m_viewMatrix * m_spearInstance2->getTransform();
-	m_spearInstance2->addBinding("Ia", m_ambientLight);
-	m_spearInstance2->addBinding("Light", m_Light.light);
-	m_spearInstance2->addBinding("Lights", 2, m_Lights);
-	m_spearInstance2->addBinding("ProjectionViewModel", pvmBunny);
-	m_spearInstance2->addBinding("ModelMatrix", m_spearInstance2->getTransform());
-	m_spearInstance2->addBinding("cameraPosition", vec3(glm::inverse(m_viewMatrix)[3]));
-	m_spearInstance2->addBinding("roughness", 1.0f);
-	m_spearInstance2->addBinding("reflectionCoefficient", 1.0f);
-	m_spearInstance2->draw();
+	// Chest Instance
+	pvmBunny = m_projectionMatrix * m_viewMatrix * m_chestInstance->getTransform();
+	m_chestInstance->addBinding("Ia", m_ambientLight);
+	m_chestInstance->addBinding("Lights", 2, m_Lights);
+	m_chestInstance->addBinding("ProjectionViewModel", pvmBunny);
+	m_chestInstance->addBinding("ModelMatrix", m_chestInstance->getTransform());
+	m_chestInstance->addBinding("cameraPosition", vec3(glm::inverse(m_viewMatrix)[3]));
+	m_chestInstance->addBinding("roughness", 1.0f);
+	m_chestInstance->addBinding("reflectionCoefficient", 1.0f);
+	m_chestInstance->draw();
+
+	// Barrel Instance
+	pvmBunny = m_projectionMatrix * m_viewMatrix * m_barrelInstance->getTransform();
+	m_barrelInstance->addBinding("Ia", m_ambientLight);
+	m_barrelInstance->addBinding("Lights", 2, m_Lights);
+	m_barrelInstance->addBinding("ProjectionViewModel", pvmBunny);
+	m_barrelInstance->addBinding("ModelMatrix", m_barrelInstance->getTransform());
+	m_barrelInstance->addBinding("cameraPosition", vec3(glm::inverse(m_viewMatrix)[3]));
+	m_barrelInstance->addBinding("roughness", 1.0f);
+	m_barrelInstance->addBinding("reflectionCoefficient", 1.0f);
+	m_barrelInstance->draw();
+
+	// Horn Instance
+	pvmBunny = m_projectionMatrix * m_viewMatrix * m_hornInstance->getTransform();
+	m_hornInstance->addBinding("Ia", m_ambientLight);
+	m_hornInstance->addBinding("Lights", 2, m_Lights);
+	m_hornInstance->addBinding("ProjectionViewModel", pvmBunny);
+	m_hornInstance->addBinding("ModelMatrix", m_hornInstance->getTransform());
+	m_hornInstance->addBinding("cameraPosition", vec3(glm::inverse(m_viewMatrix)[3]));
+	m_hornInstance->addBinding("roughness", 1.0f);
+	m_hornInstance->addBinding("reflectionCoefficient", 1.0f);
+	m_hornInstance->draw();
+
+	// Lucy Instance
+	pvmBunny = m_projectionMatrix * m_viewMatrix * m_skullInstance->getTransform();
+	m_skullInstance->addBinding("Ia", m_ambientLight);
+	m_skullInstance->addBinding("Lights", 2, m_Lights);
+	m_skullInstance->addBinding("ProjectionViewModel", pvmBunny);
+	m_skullInstance->addBinding("ModelMatrix", m_skullInstance->getTransform());
+	m_skullInstance->addBinding("cameraPosition", vec3(glm::inverse(m_viewMatrix)[3]));
+	m_skullInstance->addBinding("roughness", 1.0f);
+	m_skullInstance->addBinding("reflectionCoefficient", 1.0f);
+	m_skullInstance->draw();
 
 	//m_renderTarget.unbind();
 	//clearScreen();

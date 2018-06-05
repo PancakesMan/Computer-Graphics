@@ -14,6 +14,7 @@ public:
 	};
 
 	void initialiseQuad();
+	void initialiseFullscreenQuad();
 	void initialise(unsigned int vertexCount, const Vertex* vertices,
 		unsigned int indexCount,
 		unsigned int* indices);

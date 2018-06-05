@@ -23,16 +23,16 @@ public:
 
 protected:
 
-	ObjectInstance * m_spearInstance, * m_spearInstance2;
+	ObjectInstance *m_spearInstance, *m_chestInstance, *m_barrelInstance, *m_hornInstance, *m_skullInstance;
 
 	glm::mat4	m_viewMatrix;
 	glm::mat4	m_projectionMatrix;
 
 	aie::ShaderProgram  m_shader;
 	aie::ShaderProgram  m_planeShader;
-	Mesh                m_quadMesh;
+	Mesh                m_quadMesh, m_fullscreenQuad;
 	glm::mat4           m_quadTransform;
-	aie::OBJMesh        m_bunny;
+	aie::OBJMesh        m_spear, m_chest, m_barrel, m_horn, m_skull;
 	glm::mat4           m_bunnyTransform;
 	aie::Texture        m_gridTexture;
 

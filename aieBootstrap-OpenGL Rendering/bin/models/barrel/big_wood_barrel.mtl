@@ -1,0 +1,13 @@
+#
+#
+#
+
+newmtl _big_wood_barrel_mat
+illum 2
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ns 20.000000
+map_Kd big_diffus.tga
+map_Ks big_specular.tga
+bump big_normal.tga

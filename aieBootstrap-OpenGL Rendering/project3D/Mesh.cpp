@@ -70,6 +70,21 @@ void Mesh::initialiseQuad()
 	triCount = 2;
 }
 
+void Mesh::initialiseFullscreenQuad()
+{
+	assert(vao == 0);
+
+	//generate buffers
+	glGenBuffers(1, &vbo);
+	glGenVertexArrays(1, &vao);
+
+	//bind vertex array
+	glBindVertexArray(vao);
+
+	//bind vertex buffer
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+}
+
 void Mesh::initialise(unsigned int vertexCount, const Vertex* vertices,
 	unsigned int indexCount = 0,
 	unsigned int* indices = nullptr)
