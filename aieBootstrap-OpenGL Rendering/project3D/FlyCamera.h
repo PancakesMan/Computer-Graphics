@@ -5,7 +5,7 @@
 class FlyCamera
 {
 public:
-	FlyCamera() : theta(0), phi(-20), position(-10, 4, 0) {}
+	FlyCamera() : theta(0), phi(-20), position(20, 10, 0) {}
 
 	glm::mat4 GetProjectionMatrix(float w, float h);
 	glm::mat4 GetViewMatrix();

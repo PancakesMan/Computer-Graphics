@@ -21,10 +21,10 @@ Application3D::~Application3D() {
 bool Application3D::startup() {
 	setBackgroundColour(0.25f, 0.25f, 0.25f);
 
-	/*if (m_renderTarget.initialise(1, getWindowWidth(), getWindowHeight()) == false) {
+	if (m_renderTarget.initialise(1, getWindowWidth(), getWindowHeight()) == false) {
 		printf("Render target error!\n");
 		return false;
-	}*/
+	}
 
 	// Initialise Lighting
 	m_ambientLight = { 0.05f, 0.05f, 0.05f };
@@ -55,6 +55,13 @@ bool Application3D::startup() {
 	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f,
 										  getWindowWidth() / (float)getWindowHeight(),
 										  0.1f, 1000.f);
+
+	/*m_postShader.loadShader(aie::eShaderStage::VERTEX, "./shaders/post.vert");
+	m_postShader.loadShader(aie::eShaderStage::FRAGMENT, "./shaders/post.frag");
+	if (m_postShader.link() == false) {
+		printf("Post Shader Error: %s\n", m_postShader.getLastError());
+		return false;
+	}*/
 
 	m_shader.loadShader(aie::eShaderStage::VERTEX, "./shaders/normalmap.vert");
 	m_shader.loadShader(aie::eShaderStage::FRAGMENT, "./shaders/normalmap.frag");
@@ -108,6 +115,7 @@ bool Application3D::startup() {
 	}
 
 	m_quadMesh.initialiseQuad();
+	m_fullscreenQuad.initialiseFullscreenQuad();
 
 	// Make the quad 10 units wide
 	m_quadTransform = {
@@ -205,6 +213,39 @@ void Application3D::update(float deltaTime) {
 	//m_testLight.dds[0] = glm::normalize(vec3(glm::cos(getTime() * 2), glm::sin(getTime() * 2), 0));
 
 	m_flyCamera.Update();
+
+	if (m_currentFilter != m_filter) {
+		m_currentFilter = m_filter;
+
+		switch (m_currentFilter) {
+			case 0:
+			{
+				m_postShader.loadShader(aie::eShaderStage::VERTEX, "./shaders/post.vert");
+				m_postShader.loadShader(aie::eShaderStage::FRAGMENT, "./shaders/post.frag");
+				if (m_postShader.link() == false) 
+					printf("Post Shader Error: %s\n", m_postShader.getLastError());
+				break;
+			}
+			case 1:
+			{
+				m_postShader.loadShader(aie::eShaderStage::VERTEX, "./shaders/post.vert");
+				m_postShader.loadShader(aie::eShaderStage::FRAGMENT, "./shaders/postBlur.frag");
+				if (m_postShader.link() == false)
+					printf("Post Shader Error: %s\n", m_postShader.getLastError());
+				break;
+			}
+			case 2:
+			{
+				m_postShader.loadShader(aie::eShaderStage::VERTEX, "./shaders/post.vert");
+				m_postShader.loadShader(aie::eShaderStage::FRAGMENT, "./shaders/postDistort.frag");
+				if (m_postShader.link() == false)
+					printf("Post Shader Error: %s\n", m_postShader.getLastError());
+				break;
+			}
+			default:
+				break;
+		}
+	}
 }
 
 void Application3D::draw() {
@@ -222,10 +263,14 @@ void Application3D::draw() {
 		ImGui::SliderFloat3((std::string("Specular ") + std::to_string((int)&m_Lights[1][2])).c_str(), &m_Lights[1][2].x, 0, 1);
 	}
 	ImGui::End();
+
+	ImGui::Begin("Filters");
+	ImGui::SliderInt("Filter Number", &m_filter, 0, 2);
+	ImGui::End();
 	//
 
 	// bind our render target
-	//m_renderTarget.bind();
+	m_renderTarget.bind();
 
 	// wipe the screen to the background colour
 	clearScreen();
@@ -295,23 +340,30 @@ void Application3D::draw() {
 	m_skullInstance->addBinding("reflectionCoefficient", 1.0f);
 	m_skullInstance->draw();
 
-	//m_renderTarget.unbind();
-	//clearScreen();
-
-	// draw quad
-	m_planeShader.bind();
-	auto pvm = m_projectionMatrix * m_viewMatrix * m_quadTransform;
-	m_planeShader.bindUniform("ProjectionViewModel", pvm);
-	m_planeShader.bindUniform("diffuseTexture", 0);
-	m_gridTexture.bind(0);
-	//m_renderTarget.getTarget(0).bind(0);
-	m_quadMesh.draw();
-	
-
 	// draw 3D gizmos
 	Gizmos::draw(m_projectionMatrix * m_viewMatrix);
 
 	// draw 2D gizmos using an orthogonal projection matrix (or screen dimensions)
 	Gizmos::draw2D((float)getWindowWidth(), (float)getWindowHeight());
 
+	//unbind target to return to back buffer
+	m_renderTarget.unbind();
+	clearScreen();
+
+	//bind post shader and textures
+	m_postShader.bind();
+	m_postShader.bindUniform("colourTarget", 0);
+	m_renderTarget.getTarget(0).bind(0);
+
+	//draw fullscreen quad
+	m_fullscreenQuad.draw();
+
+	//// draw quad
+	//m_planeShader.bind();
+	//auto pvm = m_projectionMatrix * m_viewMatrix * m_quadTransform;
+	//m_planeShader.bindUniform("ProjectionViewModel", pvm);
+	//m_planeShader.bindUniform("diffuseTexture", 0);
+	//m_gridTexture.bind(0);
+	////m_renderTarget.getTarget(0).bind(0);
+	//m_quadMesh.draw();
 }

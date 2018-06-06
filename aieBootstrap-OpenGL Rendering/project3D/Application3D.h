@@ -30,6 +30,8 @@ protected:
 
 	aie::ShaderProgram  m_shader;
 	aie::ShaderProgram  m_planeShader;
+	aie::ShaderProgram  m_postShader;
+
 	Mesh                m_quadMesh, m_fullscreenQuad;
 	glm::mat4           m_quadTransform;
 	aie::OBJMesh        m_spear, m_chest, m_barrel, m_horn, m_skull;
@@ -53,4 +55,6 @@ protected:
 	FlyCamera m_flyCamera;
 
 	aie::RenderTarget m_renderTarget;
+
+	int m_filter = 0, m_currentFilter = -1;
 };
