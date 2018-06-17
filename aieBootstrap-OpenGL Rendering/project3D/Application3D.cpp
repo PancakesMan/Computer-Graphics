@@ -56,24 +56,9 @@ bool Application3D::startup() {
 										  getWindowWidth() / (float)getWindowHeight(),
 										  0.1f, 1000.f);
 
-	/*m_postShader.loadShader(aie::eShaderStage::VERTEX, "./shaders/post.vert");
-	m_postShader.loadShader(aie::eShaderStage::FRAGMENT, "./shaders/post.frag");
-	if (m_postShader.link() == false) {
-		printf("Post Shader Error: %s\n", m_postShader.getLastError());
-		return false;
-	}*/
-
 	m_shader.loadShader(aie::eShaderStage::VERTEX, "./shaders/normalmap.vert");
 	m_shader.loadShader(aie::eShaderStage::FRAGMENT, "./shaders/normalmap.frag");
 	if (m_shader.link() == false)
-	{
-		printf("Shader error: %s\n", m_shader.getLastError());
-		return false;
-	}
-
-	m_planeShader.loadShader(aie::eShaderStage::VERTEX, "./shaders/textured.vert");
-	m_planeShader.loadShader(aie::eShaderStage::FRAGMENT, "./shaders/textured.frag");
-	if (m_planeShader.link() == false)
 	{
 		printf("Shader error: %s\n", m_shader.getLastError());
 		return false;
@@ -187,30 +172,11 @@ void Application3D::update(float deltaTime) {
 	// add a transform so that we can see the axis
 	Gizmos::addTransform(mat4(1));
 
-	// demonstrate a few shapes
-	/*Gizmos::addAABBFilled(vec3(0), vec3(1), vec4(0, 0.5f, 1, 0.25f));
-	Gizmos::addSphere(vec3(5, 0, 5), 1, 8, 8, vec4(1, 0, 0, 0.5f));
-	Gizmos::addRing(vec3(5, 0, -5), 1, 1.5f, 8, vec4(0, 1, 0, 1));
-	Gizmos::addDisk(vec3(-5, 0, 5), 1, 16, vec4(1, 1, 0, 1));
-	Gizmos::addArc(vec3(-5, 0, -5), 0, 2, 1, 8, vec4(1, 0, 1, 1));*/
-
-	/*mat4 t = glm::rotate(mat4(1), time, glm::normalize(vec3(1, 1, 1)));
-	t[3] = vec4(-2, 0, 0, 1);
-	Gizmos::addCylinderFilled(vec3(0), 0.5f, 1, 5, vec4(0, 1, 1, 1), &t);*/
-
-	// demonstrate 2D gizmos
-	Gizmos::add2DAABB(glm::vec2(getWindowWidth() / 2, 100),
-					  glm::vec2(getWindowWidth() / 2 * (fmod(getTime(), 3.f) / 3), 20),
-					  vec4(0, 1, 1, 1));
-
 	// quit if we press escape
 	aie::Input* input = aie::Input::getInstance();
 
 	if (input->isKeyDown(aie::INPUT_KEY_ESCAPE))
 		quit();
-
-	//m_light.direction = glm::normalize(vec3(glm::cos(getTime() * 2), glm::sin(getTime() * 2), 0));
-	//m_testLight.dds[0] = glm::normalize(vec3(glm::cos(getTime() * 2), glm::sin(getTime() * 2), 0));
 
 	m_flyCamera.Update();
 
@@ -276,9 +242,6 @@ void Application3D::draw() {
 	clearScreen();
 
 	// update perspective in case window resized
-	/*m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f,
-										  getWindowWidth() / (float)getWindowHeight(),
-										  0.1f, 1000.f);*/
 	m_projectionMatrix = m_flyCamera.GetProjectionMatrix(getWindowWidth(), getWindowHeight());
 	m_viewMatrix = m_flyCamera.GetViewMatrix();
 	
@@ -357,13 +320,4 @@ void Application3D::draw() {
 
 	//draw fullscreen quad
 	m_fullscreenQuad.draw();
-
-	//// draw quad
-	//m_planeShader.bind();
-	//auto pvm = m_projectionMatrix * m_viewMatrix * m_quadTransform;
-	//m_planeShader.bindUniform("ProjectionViewModel", pvm);
-	//m_planeShader.bindUniform("diffuseTexture", 0);
-	//m_gridTexture.bind(0);
-	////m_renderTarget.getTarget(0).bind(0);
-	//m_quadMesh.draw();
 }

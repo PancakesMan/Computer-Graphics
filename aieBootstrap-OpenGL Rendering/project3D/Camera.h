@@ -11,12 +11,15 @@ public:
 	Camera();
 	~Camera();
 
+	// pure virtual update function
 	virtual void update(float deltaTime) = 0;
 
+	// setters
 	void setPerspective(float fieldOfView, float aspectRatio, float near, float far);
 	void setLookAt(vec3 from, vec3 to, vec3 up);
 	void setPosition(vec3 position);
 
+	// getters
 	mat4 getWorldTransform() { return worldTransform; }
 	mat4 getView() { return viewTransform; }
 	mat4 getProjection() { return projectionTransform; }

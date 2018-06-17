@@ -7,17 +7,14 @@
 #include "OBJMesh.h"
 #include "ObjectInstance.h"
 
-//ObjectInstance::ObjectInstance(aie::ShaderProgram* shader)
-//{
-//	m_shader = shader;
-//}
-
 ObjectInstance::ObjectInstance(const char* name, aie::OBJMesh* mesh, aie::ShaderProgram* shader)
 {
+	// assign to class variables
 	m_name = name;
 	m_mesh = mesh;
 	m_shader = shader;
 
+	// initialise position, rotation, and scale
 	m_pos = glm::vec3(0);
 	m_euler = glm::vec3(0);
 	m_scale = glm::vec3(1);
@@ -25,20 +22,21 @@ ObjectInstance::ObjectInstance(const char* name, aie::OBJMesh* mesh, aie::Shader
 
 ObjectInstance::~ObjectInstance()
 {
-	/*delete m_shader;
-	delete m_mesh;*/
 }
 
 void ObjectInstance::draw()
 {
+	// begin imgui window with unique name
 	ImGui::Begin((std::string(m_name) + std::to_string((int)&m_name)).c_str());
 	ImGui::SliderFloat3("Position", &m_pos.x, -20, 20);
 	ImGui::SliderFloat3("Rotation", &m_euler.x, 0, 360);
 	ImGui::SliderFloat3("Scale", &m_scale.x, 0, 10);
 	ImGui::End();
 
+	// bind shader
 	m_shader->bind();
 
+	// bind variables in maps to the shader
 	for (auto const& value : m_vec2Bindings)  m_shader->bindUniform(value.first, value.second);
 	for (auto const& value : m_vec3Bindings)  m_shader->bindUniform(value.first, value.second);
 	for (auto const& value : m_vec4Bindings)  m_shader->bindUniform(value.first, value.second);
@@ -49,9 +47,12 @@ void ObjectInstance::draw()
 	for (auto const& value : m_floatBindings) m_shader->bindUniform(value.first, value.second);
 	for (auto const& value : m_intBindings)   m_shader->bindUniform(value.first, value.second);
 
+	// draw the mesh
 	m_mesh->draw();
 }
 
+// add variables to maps for binding in update
+#pragma region binding_functions
 void ObjectInstance::addBinding(char* name, glm::vec2 value)
 {
 	m_vec2Bindings[name] = value;
@@ -96,6 +97,7 @@ void ObjectInstance::addBinding(char* name, int value)
 {
 	m_intBindings[name] = value;
 }
+#pragma endregion
 
 glm::mat4 ObjectInstance::getTransform()
 {

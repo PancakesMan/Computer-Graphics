@@ -9,6 +9,7 @@ glm::mat4 FlyCamera::GetProjectionMatrix(float w, float h)
 
 glm::mat4 FlyCamera::GetViewMatrix()
 {
+	// convert from radians to degrees
 	float thetaR = theta * 180 / 3.14159265358979f;
 	float phiR = phi * 180 / 3.14159265358979f;
 
@@ -42,6 +43,7 @@ void FlyCamera::Update()
 	lastMouseX = mx;
 	lastMouseY = my;
 
+	// move camera positions from key presses
 	if (input->isKeyDown(aie::INPUT_KEY_X))
 		position += up * deltaTime;
 
