@@ -217,7 +217,7 @@ void Application3D::update(float deltaTime) {
 void Application3D::draw() {
 	// IMGUI
 	ImGui::Begin("Lights");
-	ImGui::SliderFloat3("Ambient Light Colour", &m_ambientLight.x, 0, 1);
+	ImGui::ColorEdit3("Ambient Light Colour", &m_ambientLight.x);
 	if (ImGui::CollapsingHeader((std::string("Directional Light ") + std::to_string((int)&m_Light)).c_str())) {
 		ImGui::SliderFloat3((std::string("Direction ") + std::to_string((int)&m_Lights[0][0])).c_str(), &m_Lights[0][0].x, -20, 20);
 		ImGui::SliderFloat3((std::string("Diffusion ") + std::to_string((int)&m_Lights[0][1])).c_str(), &m_Lights[0][1].x, 0, 1);
